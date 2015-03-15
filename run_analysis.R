@@ -310,3 +310,8 @@ colnames(df.sel)<-cv
 ## Step 5 - From the data set in step 4, create a second, independent, tidy data set
 ##          with the average of each variable for each activity and each subject
 ##
+df.tidy<-df.sel
+desired<-group_by(df.tidy,subject)
+desired_0<-summarize(desired,sapply(desired[-(1:2)],mean))
+desired_1<-group_by(desired,activity)
+desired_2<-summarize(desired_1,sapply(desired_1[-(1:2)],mean))
