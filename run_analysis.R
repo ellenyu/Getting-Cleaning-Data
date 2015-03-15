@@ -21,17 +21,14 @@
 setwd("R:/Getting-Cleaning-Data")       # start with a fresh working directory first
 datadir<-"./data"                       # sub-directory where the data will be placed
 SSLurl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-querytext<-"[Mm][Ee][Aa][Nn]\\(\\)|[Ss][Tt][Dd]\\(\\)"  # to extract mean() and std()
+querytext<-"[Mm][Ee][Aa][Nn]\\(\\)|[Ss][Tt][Dd]\\(\\)"  # to extract mean() and std() in step 2
 ##
 ## packages needed for this script
 ##
 # install.packages("RCurl") # needed to handle Certified (SSL) URL
 library(RCurl)
-# install.packages("dplyr") # needed for data frame manipulations
-library(dplyr)
-# install.packages("tidyr") # needed for tidy data frame support
-library(tidyr)
-##
+# install.packages("plyr") # needed for data frame manipulations
+library(plyr)
 ##
 ## Step 1 - Merge the training and the tests sets to create unified data sets (tidy)
 ##
@@ -47,7 +44,7 @@ download.file(SSLurl, dest=filename, mode="wb")
 unzip (filename, exdir = datadir)       # unzip creates and populates the data structure 
 unlink(filename)                        # cleanup after
 dateDownloaded<-date() %>% print()      # save and print file datestamp to enable back tracking
-#> [1] "Sat Mar 14 16:16:18 2015"
+#> [1] "Sun Mar 15 16:06:08 2015"
 
 ## inspect the directory structure created and obtain the dataset directory name
 list.dirs(datadir, full.names=TRUE,recursive=TRUE)
@@ -87,14 +84,13 @@ if (length(df.features[,2])!=length(unique(df.features[,2]))){
 }
 #>[1] "Attention: Applying unique features name by combining features index and entry."
 
-##
 ## inspect the test dataset directory and obtain the dataset file names
-##
 datasetdir<-list.dirs(datadir)[3]
 #> [1] "./data/UCI HAR Dataset/test"
 ## Explore the filenames in test directory
 list.files(datasetdir)
 #> [1] "Inertial Signals" "subject_test.txt" "X_test.txt"       "y_test.txt"     
+
 ## extract subject_test filename into df.subject_test dataframe
 filename<-list.files(datasetdir)[[2]]
 filepath<-paste(datasetdir,filename,sep="/")
@@ -116,9 +112,7 @@ df.y_test<-data.frame()
 df.y_test<-read.table(filepath,header=FALSE,stringsAsFactors=FALSE)
 colnames(df.y_test)<-colnames(df.activity[2])
 
-##
 ## inspect the train dataset directory and obtain the dataset file names
-##
 datasetdir<-list.dirs(datadir)[5]
 #> [1] "./data/UCI HAR Dataset/train"
 list.files(datasetdir)
@@ -182,11 +176,10 @@ df<-rbind(df.test,df.train)
 ## cleanup and remove the redundant data frames
 rm(df.test,df.train)
 
-## now we will populate df with the activity data (this answers step 3 requirement)
+## now we will populate df with the activity data (this will answers step 3 requirement)
 df$activity<-df.activity$activity[df$activity]
 
 ## cleanup
-##
 rm(df.activity)
 
 ## to complete the tidy requirement we need to cast the subject variable as a factor 
@@ -214,7 +207,8 @@ str(df)
 
 selected<-vector()
 selected<-grep(querytext,df.features$features)
-rm(df.features)         ## cleanup
+## cleanup
+rm(df.features)        
 
 ## offset the selected vector for the 3 columns (group,subject,activity) we had cbound to df dataset
 selected<-selected+3
@@ -237,25 +231,26 @@ str(df.sel)
 ## Step-3 Uses descriptive activity names to name the activities in the data set
 
 ## features_info.txt provides description to translate the short hand labels
-## 
-## "^t"<-"Time domain signal$"
-## "^f"<-"FFT Frequency domain signal$"
-## "Acc"<-"Acceleration "
-## "Body"<-"Body "                      * note we will suppress multiple occurences
-## "Gravity"<-"Gravity "
-## "Gyro"<-"Gyroscopic "
-## "Jerk"<-"Jerk "
-## "mean()"<-"Mean value"        
-## "Mag"<-"Magnitude "
-## "std()"<-"Standard deviation"
+##
+##      from<-to
+##
+##      "^t"<-"Time domain signal"
+##      "^f"<-"FFT Frequency domain signal"
+##      "Acc"<-"Acceleration "
+##      "Body"<-"Body "             * note we will suppress multiple occurences
+##      "Gravity"<-"Gravity "
+##      "Gyro"<-"Gyroscopic "
+##      "Jerk"<-"Jerk "
+##      "mean()"<-"Mean value"        
+##      "Mag"<-"Magnitude "
+##      "std()"<-"Standard deviation"
 ##
 ## and the directional data suffixes will be translated as follows:
 ##
-## "-X$"<-" X-axis"
-## "-Y$"<-" Y-axis"
-## "-Z$"<-" Z-axis"
+##      "-X$"<-" X-axis"
+##      "-Y$"<-" Y-axis"
+##      "-Z$"<-" Z-axis"
 ##
-firstElement<-function(x){x[1]}
 secondElement<-function(x){x[2]}
 zapduplicate<-function(x,...){
         ## to eliminate duplicates in a string
@@ -279,20 +274,12 @@ translateElement<-function(x,...){
 ##
 cv<-vector()
 cv<-colnames(df.sel)
-cv<-strsplit(cv,"^(.*)[0-9]\\-")
-cv<-sapply(cv,secondElement)
-cv<-sapply(cv,translateElement)
-cv<-as.list(cv)
-cv<-tolower(cv)
-##
-## Eliminate duplicates
-cv<-sapply(cv,zapduplicate)
-##
-
-## and add the column names for the subject and activity
-cv<-as.vector(cv)
-cv[1]<-colnames(df[2])
-cv[2]<-colnames(df[3])
+## perform all cleanup on all column headers but the factors (subject and activity)
+cv[-(1:2)]<-strsplit(cv[-(1:2)],"^(.*)[0-9]\\-")
+cv[-(1:2)]<-sapply(cv[-(1:2)],secondElement)    # keep 2nd chunk
+cv[-(1:2)]<-sapply(cv[-(1:2)],translateElement) # translate with dictionary
+cv[-(1:2)]<-tolower(as.list(cv[-(1:2)]))        # eliminate caps
+cv[-(1:2)]<-sapply(cv[-(1:2)],zapduplicate)     # eliminate duplicated words
 ## verify the description is now in 'plain english' to complete step 3
 cv
 #> [1] "subject"                                                                           
@@ -310,8 +297,30 @@ colnames(df.sel)<-cv
 ## Step 5 - From the data set in step 4, create a second, independent, tidy data set
 ##          with the average of each variable for each activity and each subject
 ##
-df.tidy<-df.sel
-desired<-group_by(df.tidy,subject)
-desired_0<-summarize(desired,sapply(desired[-(1:2)],mean))
-desired_1<-group_by(desired,activity)
-desired_2<-summarize(desired_1,sapply(desired_1[-(1:2)],mean))
+df.mean<-data.frame()
+df.mean<-ddply(df.sel,.(subject,activity),numcolwise(mean))
+##
+## rename the columns of the tidy dataset df.mean appropriately
+cv<-colnames(df.mean)
+## paste "mean(" and terminate with ")" each name,excepr the 1st two factor columns (subject and activity)
+cv[-(1:2)]<-paste0("mean(",cv[-(1:2)],")")
+colnames(df.mean)<-cv
+##
+## verify the df.mean dataframe meets desired goal
+##
+str(df.mean)
+#> 'data.frame':        180 obs. of  68 variables:
+#> $ subject                                                                                 : Factor w/ 30 levels "1","2","3","4",..: 1 1 1 1 1 1 2 2 2 2 ...
+#> $ activity                                                                                : Factor w/ 6 levels "LAYING","SITTING",..: 1 2 3 4 5 6 1 2 3 4 ...
+#> $ mean(time domain signal body acceleration mean value along x-axis)                      : num  0.222 0.261 0.279 0.277 0.289 ...
+#> $ mean(time domain signal body acceleration mean value along y-axis)                      : num  -0.04051 -0.00131 -0.01614 -0.01738 -0.00992 ...
+#> $ mean(time domain signal body acceleration mean value along z-axis)                      : num  -0.113 -0.105 -0.111 -0.111 -0.108 ...        
+#> ...
+#> $ mean(fft frequency domain signal body gyroscopic magnitude standard deviation)          : num  -0.824 -0.932 -0.978 -0.321 -0.398 ...
+#> $ mean(fft frequency domain signal body gyroscopic jerk magnitude mean value)             : num  -0.942 -0.99 -0.995 -0.319 -0.282 ...
+#> $ mean(fft frequency domain signal body gyroscopic jerk magnitude standard deviation)     : num  -0.933 -0.987 -0.995 -0.382 -0.392 ...
+
+## save the tidy dataset df for later use and document its features
+write.table(df.mean,file=paste0(datadir,"/dfmean.txt"),row.names=FALSE)
+##
+## This concludes step 5 of this script
