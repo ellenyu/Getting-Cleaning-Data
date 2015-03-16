@@ -216,9 +216,12 @@ References:
         www.smartlab.ws
 
 1.      http://www.insideactivitytracking.com/data-science-activity-tracking-and-the-battle-for-the-worlds-top-sports-brand/
+
 2.      http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+
 3.      https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
-4.      Codebook.md file contains full description of the variables used and data documentation
+
+4.      Codebook.txt file contains full description of the variables used and data documentation
 
 License:
 ========
