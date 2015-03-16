@@ -68,9 +68,12 @@ To execute the script, the following packages are required:
 1. RCurl, to handle Certified SSL URL support. This is commonly provided thru
    install.packages("RCurl") 
    library(RCurl)
-2. plyr, to aggregate (in step-5) the df.mean dataset.   
-   install.packages("plyr") # needed for data frame manipulations
+2. plyr, to aggregate (in step 5) the df.mean dataset.   
+   install.packages("plyr")  
    library(plyr)
+3. dplyr, to select (in step 4) from df into df.sel dataframe
+   install.packages("dplyr")  
+   library(dplyr)
    
 The methods derived in this script are common R practice. 
 
@@ -80,51 +83,125 @@ implemented. All data in the data frames are properly labeled, and the data aggr
 The group category is introduced to account for the origin of the data, which was originally split
 between test and train groups by the authors.
 
-The actual data aggregated by this script is already processed data documented by the authors and 
-the raw data. Although available in the dataset and exposed when unzipping, the raw data layer is
-not addressed by this script. However, the authors have provided full description of the data
-reduction method they applied and documented it in the features.txt and features-info.txt files.
+The actual data aggregated by this script is already processed data documented by the authors. 
+The raw data, although available in the dataset and exposed when unzipping below the UCI HAR Dataset directories, corresponds to a data layer that is NOT addressed by this script. 
+It can be exposed by reding the corresponding Inertial Signals directory unzipped.
+However, the authors have provided full description of the data reduction method they applied and documented it in the features.txt and features-info.txt files. We are dealing in this script with the time and frequency processed data as well as the accelerations (linear and gyroscopic) and adjustment made relative to gravity.
 
-Because the process of aggregation focused on regrouping similar data structures, similitude
-between the train and test data process is evident in the script.
+The data is immediately observed with similitudes as it was split by the authors into two groups
+(test and train) representing 70/30 cut of the total population and populating test and train directories under the UCI HAR Dataset. There were 30 subjects 
+participating in 6 activities monitored.
 
-The process of aggregation includes first the retrieval of the data variable names, obtained from
-the features datafile. Activities and subject data (factors) are also retrieved. The largest
-data chunk is obtained from the instrumented smartphone output, and represents real time and FFT
-spectral info documented in details in the features_info.txt file. They account for 561 numeric
-variables. Proper casting into factors type is also performed on the 3 variables (group,activity
-and subject). Step 1 goal is reached with 10299 obs of 564 variables placed in
-the df dataframe and saved in df.txt in the data subdirectory.
+The script 1st step consists in data retrieval and unziping the data structure from
+the provided SSL URL into a data subdirectory.
+Then the retrieval is systematically driving to read:
+a) the df.activity dataframe is built when reading the activity_labels.txt.
+b) the features.txt file which names the 561 data variables corresponding to numeric
+data collected is stored into the df.features dataframe.
+
+A sanity check is performed at this stage to insure all features are unique: this is required
+since they will become variable names in out tidy set and must therefore be unique.
+In case the variables are not unique names, we device a simple strategy to combine index and name
+and producing a unique name, by comparing the length of features names and the corresponding
+length of unique names. The script also indicates this occurence with a console display:
+
+ [1] "Attention: Applying unique features name by combining features index and entry."
+
+Further observation reveal that the frequency decomposition data had redundant names, which is 
+in conflict with the definition of tidy datasets. 
+
+At that point, the process of populating the data collected from the similar data structures
+(train and test subdirectories).There are 3 different files that are read:
+a) the subject_test.txt file that indicates for each observation which subject was tested
+b) the X_test.txt which contains the 561 variables
+c) the y_test.txt contains the activity index performed during each observation
+The script also appropriatelty renames the x_test and y_test columns with the features and 
+activity names resolved from df.features and df.activity.
+
+We then have 2 groups of similar data frames (df.subject_test, df.X_test and df_y.test) for the
+test group and  the corresponding (df.subject_train, df.X_train and df.y_train) for the train
+group. The script adds another factor variable to these to retain the origin of the data before
+merging. We add the factor variable group, populated according to either test or train group
+the correspondind df.test and df.train dataframes.
+
+The process of aggregation consists then in aggregating column wise into df.test dataframe:
+a) df.test              factor 1 var()
+b) df.subject_test      factor 1 var()
+c) df.y_test            factor 1 var()
+d) df.x_test            numeric 561 var()
+and respectively aggregating into df.train dataframe:
+a) df.train             factor 1 var()
+b) df.suject_train      factor 1 var()
+c) df.y_train           factor 1 var()
+d) df.x_train           numeric 561 var()
+
+We finsih the aggregation by popultaing the activity variable with the activity name, resolved 
+by df.activity and appropriately casting the the subject variable. so the 3 factors
+Each df.test and df.train contain 564 va and are then row bound into the df tidy dataset.
+we anotate the activity variable in df dataframe using the df.activity information. The script
+also performs cleanup and eliminates all redundant dataframes. At this stage df is the tidy set,
+and Step 1 goal is reached with 10299 obs of 564 variables placed in the df dataframe.
+Although not required, the script saves the tidy dataset in df.txt in the data subdirectory, for
+further inspection and analysis.
 
 Step 2 then selects only mean and standard deviation variables, and retains the factors to 
-assemble a tidy dataset df.sel. This step produces 10299 observations of 68 variables. In this
-process, we discovered all varibles named were not unique, as described in the features.txt.
-In particular, all the frequency decomposition data had redundant names, which is in conflict with
-the definition of tidy datasets. Therefore, we implemented a strategy to produce unique names
-by pasting index and variable names. None of this data however affected the next steps.
+assemble a tidy dataset df.sel. A query is performed on the numeric data colums and is
+using a RegEx string querytext<-"[Mm][Ee][Aa][Nn]\\(\\)|[Ss][Tt][Dd]\\(\\)
+to extract mean() and std().It returns 66 matching variables.
 
-The description of the variables was used in the script to establish the ReGex dictionary and 
-implement the translation required in step 3. Three functions were coded to help
-in the processing of text information and lists: secondElement, zapduplicate and translateElement.
-The translateElement is implementing a simple RegEx translation to replace shorthand scientific
-labeling of variables with common english full titling.
+The script combines the 2 factor variables (subject and activity) and the 66 query results numeric
+variables into a tidy set df.sel containing 10299 observations of 68 variables. 
 
-Step 4 was implemented as the dataframes retrieved the activities info and the corresponding names
-were respectively substituting the index info, merging activities in the tidy set. This is a very
-short process as it only copies back the translated info into the column names of the tidy dataset
-df.sel. Step 4 is complete when the 10299 observations are described by 68 variables: the two
-factors (subject and activity) and the 66 plain english described variables representing means and
-sd data variables only.
+Three functions help in the processing of text information and lists:
+
+a) secondElement, to extract the 2nd element from a list via simple subsetting
+b) zapduplicate, use an unlist, unique, paste approach to eliminate redundant patterns. 
+c) translateElement is implementing a simple RegEx translation to replace shorthand scientific
+labeling of variables with common english full titling. 
+The description of the variables was used in the script to establish a ReGex dictionary in a
+dataframe df,dict and implement the translation required in step 3 as detailed below:
+
+      from<-to
+      "^t"<-"Time domain signal"
+      "^f"<-"FFT Frequency domain signal"
+      "Acc"<-"Acceleration "
+      "Body"<-"Body "             * note we will suppress multiple occurences with zapduplicate
+      "Gravity"<-"Gravity "
+      "Gyro"<-"Gyroscopic "
+      "Jerk"<-"Jerk "
+      "mean()"<-"Mean value"        
+      "Mag"<-"Magnitude "
+      "std()"<-"Standard deviation"
+      "-X$"<-" X-axis"
+      "-Y$"<-" Y-axis"
+      "-Z$"<-" Z-axis"
+
+The script performs in sequence on the proper cv subset extracted from the df.sel columns.:
+a) strsplits of the numeric index info, including dash using "^(.*)[0-9]\\-" RegEx
+b) selects the 2nd element via sapply secondElement
+c) translates it via sapply and translateElement
+d) lowercaps 
+e) zapduplicates by sapply zapduplicate
+
+All numeric column variables are processed and the factor variables are excluded from this
+transformation by subsetting.
+
+Step 4 is a very short process as it only copies back the translated info into the column names of
+the tidy dataset df.sel and is complete when the 10299 observations are described by 68 variables:
+the two factors (subject and activity) and the 66 plain english described numeric variables
+representing means and sd data variables only.
 
 In step 5, ddply is used to aggregate the df.sel data and obtain mean values per subject and
 activities. This is performed column wise on the selected groups and the corresponding dataset
 df.mean is obtained and written to the dfmean.txt file using the required write.table() with
-the specified option (row.names=FALSE). The 223KB file contains 180 observations (6 activities
-performed by each of the 30 subjects) for the corresponding 68 variables (2 factors: subject and
-activity) and 66 means. Note that the corresponding labeling update of the dataset variables was
-also implemented to keep the description of the tidy dataset accurate.
+the specified option (row.names=FALSE). 
 
-This completes the description of the script.The reader is referred to the codebook.md for full
+The 223KB file contains 180 observations (6 activities performed X by each of the 30 subjects) for
+the corresponding 68 variables (2 factors: subject and activity) and 66 numeric variables 
+corresponding to the desired mean values. The corresponding labeling update of the dataset
+variables was also implemented to keep the description of the tidy dataset accurate.
+
+This completes the description of the script. The reader is referred to the codebook.txt for full
 description of all variables used throughout the script, and full documentation of the datasets
 obtained.
 

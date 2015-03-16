@@ -25,10 +25,12 @@ querytext<-"[Mm][Ee][Aa][Nn]\\(\\)|[Ss][Tt][Dd]\\(\\)"  # to extract mean() and 
 ##
 ## packages needed for this script
 ##
-# install.packages("RCurl") # needed to handle Certified (SSL) URL
+install.packages("RCurl") # needed to handle Certified (SSL) URL
 library(RCurl)
-# install.packages("plyr") # needed for data frame manipulations
+install.packages("plyr")  # needed for data frame manipulations
 library(plyr)
+install.packages("dplyr") # needed for data frame selection
+library(dplyr)
 ##
 ## Step 1 - Merge the training and the tests sets to create unified data sets (tidy)
 ##
@@ -43,8 +45,6 @@ download.file(SSLurl, dest=filename, mode="wb")
 #> downloaded 59.7 MB
 unzip (filename, exdir = datadir)       # unzip creates and populates the data structure 
 unlink(filename)                        # cleanup after
-dateDownloaded<-date() %>% print()      # save and print file datestamp to enable back tracking
-#> [1] "Sun Mar 15 16:06:08 2015"
 
 ## inspect the directory structure created and obtain the dataset directory name
 list.dirs(datadir, full.names=TRUE,recursive=TRUE)
@@ -174,7 +174,7 @@ df<-data.frame()
 df<-rbind(df.test,df.train)
 
 ## cleanup and remove the redundant data frames
-rm(df.test,df.train)
+#rm(df.test,df.train)
 
 ## now we will populate df with the activity data (this will answers step 3 requirement)
 df$activity<-df.activity$activity[df$activity]
@@ -274,7 +274,7 @@ translateElement<-function(x,...){
 cv<-vector()
 cv<-colnames(df.sel)
 ## perform all cleanup on all column headers but the factors (subject and activity)
-cv[-(1:2)]<-strsplit(cv[-(1:2)],"^(.*)[0-9]\\-")
+cv[-(1:2)]<-strsplit(cv[-(1:2)],"^(.*)[0-9]\\-") # remove index and dash  
 cv[-(1:2)]<-sapply(cv[-(1:2)],secondElement)    # keep 2nd chunk
 cv[-(1:2)]<-sapply(cv[-(1:2)],translateElement) # translate with dictionary
 cv[-(1:2)]<-tolower(as.list(cv[-(1:2)]))        # eliminate caps
@@ -323,3 +323,22 @@ str(df.mean)
 write.table(df.mean,file=paste0(datadir,"/dfmean.txt"),row.names=FALSE)
 ##
 ## This concludes step 5 of this script
+##
+## The following when un-commented can be used to capture the structure of the dataframes
+##
+#> capture.output(colnames(df),file=paste0(datadir,"/df.colnames.txt"))
+#> capture.output(colnames(df.sel),file=paste0(datadir,"/dfsel.colnames.txt"))
+#> capture.output(colnames(df.mean),file=paste0(datadir,"/dfmean_colnames.txt"))
+#> capture.output(str(df,list.len=568),file=paste0(datadir,"/df_structure.txt"))
+#> capture.output(str(df.X_test,list.len=568),file=paste0(datadir,"/df.X_test_structure.txt"))
+#> capture.output(str(df.X_train,list.len=568),file=paste0(datadir,"/df.X_train_structure.txt"))
+#> capture.output(str(df.activity,list.len=568),file=paste0(datadir,"/df.activity_structure.txt"))
+#> capture.output(str(df.features,list.len=568),file=paste0(datadir,"/df.features_structure.txt"))
+#> capture.output(str(df.mean,list.len=568),file=paste0(datadir,"/df.mean_structure.txt"))
+#> capture.output(str(df.sel,list.len=568),file=paste0(datadir,"/df.sel_structure.txt"))
+#> capture.output(str(df.subject_test,list.len=568),file=paste0(datadir,"/df.subject_test_structure.txt"))
+#> capture.output(str(df.subject_train,list.len=568),file=paste0(datadir,"/df.subject_train_structure.txt"))
+#> capture.output(str(df.test,list.len=568),file=paste0(datadir,"/df.test_structure.txt"))
+#> capture.output(str(df.train,list.len=568),file=paste0(datadir,"/df.train_structure.txt"))
+#> capture.output(str(df.y_test,list.len=568),file=paste0(datadir,"/df.y_test_structure.txt"))
+#> capture.output(str(df.y_train,list.len=568),file=paste0(datadir,"/df.y_train_structure.txt"))
