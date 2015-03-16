@@ -221,7 +221,7 @@ References:
 
 3.      https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
 
-4.      Codebook.txt file contains full description of the variables used and data documentation
+4.      CodeBook.md file contains full description of the variables used and data documentation
 
 License:
 ========
