@@ -18,7 +18,7 @@
 ##
 ## Input parameters section
 ## 
-setwd("R:/Getting-Cleaning-Data")       # start with a fresh working directory first
+setwd("R:/Getting-Cleaning-Data2")       # start with a fresh working directory first
 datadir<-"./data"                       # sub-directory where the data will be placed
 SSLurl<-"https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 querytext<-"[Mm][Ee][Aa][Nn]\\(\\)|[Ss][Tt][Dd]\\(\\)"  # to extract mean() and std() in step 2
@@ -278,7 +278,7 @@ cv[-(1:2)]<-strsplit(cv[-(1:2)],"^(.*)[0-9]\\-") # remove index and dash
 cv[-(1:2)]<-sapply(cv[-(1:2)],secondElement)    # keep 2nd chunk
 cv[-(1:2)]<-sapply(cv[-(1:2)],translateElement) # translate with dictionary
 cv[-(1:2)]<-tolower(as.list(cv[-(1:2)]))        # eliminate caps
-cv[-(1:2)]<-sapply(cv[-(1:2)],zapduplicate)     # eliminate duplicated words
+cv[-(1:2)]<-sapply(cv[-(1:2)],zapDuplicate)     # eliminate duplicated words
 ## verify the description is now in 'plain english' to complete step 3
 cv
 #> [1] "subject"                                                                           
