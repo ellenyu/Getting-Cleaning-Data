@@ -26,9 +26,16 @@ querytext	chr		query mean() and std() from chr list 	"[Mm][Ee][Aa][Nn]\\(\\)|[Ss
 
 b) functions defined in script:
 
-secondElement	function (x)
-translateElement function (x,...)
-zapduplicate	function (x)		
+name                            input                                   output
+secondElement	function (x)    chr list x                              x[[2]]
+translateElement function (x,...) chr list x                            chr list x translated
+                                function builds a ch 2-col dict df
+                                from chr list (RegEx)
+                                to   chr list (English)
+                                translates each element of x
+zapDuplicate	function (x)	list x                                  list x without dup
+                                unlists x, strsplit at " ",
+                                paste unique and " "
 
 c) variables used to process script
 name		type		purpose					content				more.info in

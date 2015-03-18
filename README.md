@@ -155,7 +155,7 @@ variables into a tidy set df.sel containing 10299 observations of 68 variables.
 Three functions help in the processing of text information and lists:
 
 a) secondElement, to extract the 2nd element from a list via simple subsetting
-b) zapduplicate, use an unlist, unique, paste approach to eliminate redundant patterns. 
+b) zapDuplicate, use an unlist, unique, paste approach to eliminate redundant patterns. 
 c) translateElement is implementing a simple RegEx translation to replace shorthand scientific
 labeling of variables with common english full titling. 
 The description of the variables was used in the script to establish a ReGex dictionary in a
@@ -181,7 +181,7 @@ a) strsplits of the numeric index info, including dash using "^(.*)[0-9]\\-" Reg
 b) selects the 2nd element via sapply secondElement
 c) translates it via sapply and translateElement
 d) lowercaps 
-e) zapduplicates by sapply zapduplicate
+e) eliminates duplicate chr string by sapply zapDuplicate
 
 All numeric column variables are processed and the factor variables are excluded from this
 transformation by subsetting.
