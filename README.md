@@ -159,7 +159,8 @@ b) zapDuplicate, use an unlist, unique, paste approach to eliminate redundant pa
 c) translateElement is implementing a simple RegEx translation to replace shorthand scientific
 labeling of variables with common english full titling. 
 The description of the variables was used in the script to establish a ReGex dictionary in a
-dataframe df,dict and implement the translation required in step 3 as detailed below:
+dataframe df,dict and implement the translation required in step 3 as over the whole dict content,
+converting the from into to chrs:
 
       from<-to
       "^t"<-"Time domain signal"

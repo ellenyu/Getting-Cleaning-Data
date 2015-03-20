@@ -201,7 +201,6 @@ str(df)
 #> $ 96-tBodyAccJerk-sma()                   : num  -0.931 -0.974 -0.982 -0.983 -0.987 ...
 #> [list output truncated]
 
-
 ## Step-2 Only keep the variables (columns) that pertain to mean() and std() using grep
 
 selected<-vector()
@@ -254,7 +253,7 @@ secondElement<-function(x){x[2]}
 zapDuplicate<-function(x,...){
         ## to eliminate duplicates in a string
         x<-unlist(strsplit(x, split=" "))       # unlists and splits at " "
-        x<-paste(unique(x), collapse = " ")     # retains only unique pieces and paste back
+        x<-paste(unique(x), collapse = " ")     # retains only unique pieces and paste back with " "
         x
 }
 translateElement<-function(x,...){

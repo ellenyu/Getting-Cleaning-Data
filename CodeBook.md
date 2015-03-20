@@ -33,9 +33,9 @@ translateElement function (x,...) chr list x                            chr list
                                 from chr list (RegEx)
                                 to   chr list (English)
                                 translates each element of x
-zapDuplicate	function (x)	list x                                  list x without dup
+zapDuplicate	function (x)	list x                                  list x without duplicate
                                 unlists x, strsplit at " ",
-                                paste unique and " "
+                                paste unique chunks and " "
 
 c) variables used to process script
 name		type		purpose					content				more.info in
